@@ -1540,6 +1540,13 @@ components:
         - VIEW_WRITE_PROPERTIES
         - VIEW_FULL_METADATA
 
+    FunctionPrivilege:
+      type: string
+      enum:
+        - CATALOG_MANAGE_ACCESS
+        - FUNCTION_LIST
+        - FUNCTION_READ_PROPERTIES
+
     TablePrivilege:
       type: string
       enum:
