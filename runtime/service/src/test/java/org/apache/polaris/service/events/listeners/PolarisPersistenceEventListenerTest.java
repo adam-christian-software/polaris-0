@@ -339,6 +339,23 @@ class PolarisPersistenceEventListenerTest {
   }
 
   @Test
+  void shouldResolveFunctionResourceType() {
+    CapturingPersistenceListener listener = new CapturingPersistenceListener();
+    TableIdentifier identifier = TableIdentifier.of(NAMESPACE, "function");
+    listener.onEvent(
+        new PolarisEvent(
+            PolarisEventType.AFTER_LOAD_FUNCTION,
+            metadata(),
+            ImmutableAttributeMap.builder()
+                .put(EventAttributes.CATALOG_NAME, CATALOG_NAME)
+                .put(EventAttributes.FUNCTION_IDENTIFIER, identifier)
+                .build()));
+    EventEntity event = listener.persistedEvent(PolarisEventType.AFTER_LOAD_FUNCTION);
+    assertThat(event.getResourceType()).isEqualTo(EventEntity.ResourceType.FUNCTION);
+    assertThat(event.getResourceIdentifier()).isEqualTo(identifier.toString());
+  }
+
+  @Test
   void shouldResolveGenericTableResourceType() {
     CapturingPersistenceListener listener = new CapturingPersistenceListener();
 

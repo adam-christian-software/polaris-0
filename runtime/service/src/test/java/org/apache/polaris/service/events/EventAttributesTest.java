@@ -53,6 +53,7 @@ import org.apache.polaris.service.types.CreatePolicyRequest;
 import org.apache.polaris.service.types.DetachPolicyRequest;
 import org.apache.polaris.service.types.GenericTable;
 import org.apache.polaris.service.types.GetApplicablePoliciesResponse;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.LoadPolicyResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 import org.apache.polaris.service.types.UpdatePolicyRequest;
@@ -98,6 +99,7 @@ class EventAttributesTest {
           CreatePolicyRequest.class,
           UpdatePolicyRequest.class,
           LoadPolicyResponse.class,
+          LoadFunctionResponse.class,
           AttachPolicyRequest.class,
           DetachPolicyRequest.class,
           GetApplicablePoliciesResponse.class,

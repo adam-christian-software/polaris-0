@@ -91,11 +91,11 @@ paths:
   /v1/{prefix}/namespaces/{namespace}/tables:
     $ref: './iceberg-rest-catalog-open-api.yaml#/paths/~1v1~1{prefix}~1namespaces~1{namespace}~1tables'
 
-  # /v1/{prefix}/namespaces/{namespace}/functions:
-  # Not implemented in Polaris
+  /v1/{prefix}/namespaces/{namespace}/functions:
+    $ref: './iceberg-rest-catalog-open-api.yaml#/paths/~1v1~1{prefix}~1namespaces~1{namespace}~1functions'
 
-  # /v1/{prefix}/namespaces/{namespace}/functions/{function}:
-  # Not implemented in Polaris
+  /v1/{prefix}/namespaces/{namespace}/functions/{function}:
+    $ref: './iceberg-rest-catalog-open-api.yaml#/paths/~1v1~1{prefix}~1namespaces~1{namespace}~1functions~1{function}'
 
   /v1/{prefix}/namespaces/{namespace}/register:
     $ref: './iceberg-rest-catalog-open-api.yaml#/paths/~1v1~1{prefix}~1namespaces~1{namespace}~1register'

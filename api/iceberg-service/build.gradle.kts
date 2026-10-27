@@ -95,6 +95,8 @@ openApiGenerate {
       "GetNamespaceResponse" to "org.apache.iceberg.rest.responses.GetNamespaceResponse",
       "ListNamespacesResponse" to "org.apache.iceberg.rest.responses.ListNamespacesResponse",
       "ListTablesResponse" to "org.apache.iceberg.rest.responses.ListTablesResponse",
+      "ListFunctionsResponse" to "org.apache.iceberg.rest.responses.ListTablesResponse",
+      "LoadFunctionResult" to "org.apache.polaris.service.types.LoadFunctionResponse",
       "LoadCredentialsResponse" to "org.apache.iceberg.rest.responses.LoadCredentialsResponse",
       "LoadTableResult" to "org.apache.iceberg.rest.responses.LoadTableResponse",
       "LoadViewResult" to "org.apache.iceberg.rest.responses.LoadTableResponse",

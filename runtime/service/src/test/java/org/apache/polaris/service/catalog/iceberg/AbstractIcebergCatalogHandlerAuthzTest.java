@@ -19,10 +19,12 @@
 package org.apache.polaris.service.catalog.iceberg;
 
 import static org.apache.polaris.service.catalog.AccessDelegationMode.VENDED_CREDENTIALS;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import jakarta.inject.Inject;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.rest.requests.ReportMetricsRequest;
 import org.apache.iceberg.rest.requests.UpdateNamespacePropertiesRequest;
 import org.apache.iceberg.rest.requests.UpdateTableRequest;
+import org.apache.iceberg.util.JsonUtil;
 import org.apache.iceberg.view.ImmutableSQLViewRepresentation;
 import org.apache.iceberg.view.ImmutableViewVersion;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
@@ -76,8 +79,15 @@ import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.CatalogRoleEntity;
+import org.apache.polaris.core.entity.PolarisEntity;
+import org.apache.polaris.core.entity.PolarisEntitySubType;
+import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PolarisPrivilege;
+import org.apache.polaris.core.entity.table.IcebergTableLikeEntity;
+import org.apache.polaris.core.persistence.PolarisResolvedPathWrapper;
 import org.apache.polaris.core.persistence.resolver.PolarisResolutionManifest;
+import org.apache.polaris.core.persistence.resolver.ResolvedPathKey;
+import org.apache.polaris.core.persistence.resolver.ResolverPath;
 import org.apache.polaris.service.admin.PolarisAuthzTestBase;
 import org.apache.polaris.service.admin.PolarisAuthzTestsFactory;
 import org.apache.polaris.service.catalog.AccessDelegationMode;
@@ -85,6 +95,7 @@ import org.apache.polaris.service.context.catalog.PolarisLocalCatalogFactory;
 import org.apache.polaris.service.http.IfNoneMatch;
 import org.apache.polaris.service.idempotency.IdempotencyConfiguration;
 import org.apache.polaris.service.idempotency.IdempotencyRequestContext;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 import org.apache.polaris.service.types.NotificationType;
 import org.apache.polaris.service.types.TableUpdateNotification;
@@ -1488,6 +1499,60 @@ public abstract class AbstractIcebergCatalogHandlerAuthzTest extends PolarisAuth
         .shouldPassWith(PolarisPrivilege.VIEW_WRITE_PROPERTIES)
         .shouldPassWith(PolarisPrivilege.VIEW_CREATE)
         .shouldPassWith(PolarisPrivilege.VIEW_FULL_METADATA)
+        .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_CONTENT)
+        .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_METADATA)
+        .createTests();
+  }
+
+  @TestFactory
+  Stream<DynamicNode> testListFunctionsPrivileges() {
+    return authzTestsBuilder("listFunctions")
+        .action(() -> newHandler().listFunctions(NS1A, null, null))
+        .shouldPassWith(PolarisPrivilege.FUNCTION_LIST)
+        .shouldPassWith(PolarisPrivilege.FUNCTION_READ_PROPERTIES)
+        .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_CONTENT)
+        .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_METADATA)
+        .createTests();
+  }
+
+  @TestFactory
+  Stream<DynamicNode> testLoadFunctionPrivileges() {
+    TableIdentifier identifier = TableIdentifier.of(NS1A, "function");
+    PolarisResolutionManifest manifest =
+        resolutionManifestFactory.createResolutionManifest(authenticatedRoot, CATALOG_NAME);
+    manifest.addPath(new ResolverPath(Arrays.asList(NS1A.levels()), PolarisEntityType.NAMESPACE));
+    manifest.resolveAll();
+    PolarisResolvedPathWrapper parent = manifest.getResolvedPath(ResolvedPathKey.ofNamespace(NS1A));
+    IcebergTableLikeEntity entity =
+        new IcebergTableLikeEntity.Builder(
+                PolarisEntitySubType.ICEBERG_FUNCTION,
+                identifier,
+                "file:///tmp/authz/function.json")
+            .setCreateTimestamp(System.currentTimeMillis())
+            .setId(metaStoreManager.generateNewEntityId(polarisContext).getId())
+            .setCatalogId(catalogEntity.getId())
+            .setParentId(parent.getRawLeafEntity().getId())
+            .setBaseLocation("file:///tmp/authz/function")
+            .build();
+    assertThat(
+            metaStoreManager
+                .createEntityIfNotExists(
+                    polarisContext, PolarisEntity.toCoreList(parent.getRawFullPath()), entity)
+                .isSuccess())
+        .isTrue();
+
+    LocalIcebergCatalog catalog = Mockito.mock(LocalIcebergCatalog.class);
+    Mockito.when(catalog.loadFunction(identifier))
+        .thenReturn(
+            new LoadFunctionResponse(
+                entity.getMetadataLocation(), JsonUtil.mapper().createObjectNode()));
+    LocalCatalogFactory factory = Mockito.mock(LocalCatalogFactory.class);
+    Mockito.when(factory.createCatalog(Mockito.any())).thenReturn(catalog);
+    return authzTestsBuilder("loadFunction")
+        .action(
+            () ->
+                newHandler(Set.of(PRINCIPAL_ROLE1), CATALOG_NAME, factory).loadFunction(identifier))
+        .shouldPassWith(PolarisPrivilege.FUNCTION_READ_PROPERTIES)
         .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_CONTENT)
         .shouldPassWith(PolarisPrivilege.CATALOG_MANAGE_METADATA)
         .createTests();

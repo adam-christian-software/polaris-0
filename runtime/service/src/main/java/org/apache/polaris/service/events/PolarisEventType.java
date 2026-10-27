@@ -199,7 +199,13 @@ public enum PolarisEventType {
   AFTER_ATTEMPT_TASK(1401, Category.TASK_EXECUTION),
 
   // Rate Limiting Events
-  BEFORE_LIMIT_REQUEST_RATE(1500, Category.RATE_LIMITING);
+  BEFORE_LIMIT_REQUEST_RATE(1500, Category.RATE_LIMITING),
+
+  // Function Events
+  BEFORE_LIST_FUNCTIONS(1600, Category.FUNCTION),
+  AFTER_LIST_FUNCTIONS(1601, Category.FUNCTION),
+  BEFORE_LOAD_FUNCTION(1602, Category.FUNCTION),
+  AFTER_LOAD_FUNCTION(1603, Category.FUNCTION);
 
   private final int code;
   private final Category category;
@@ -228,6 +234,7 @@ public enum PolarisEventType {
     NAMESPACE,
     TABLE,
     VIEW,
+    FUNCTION,
     POLICY,
     GENERIC_TABLE,
     PRINCIPAL_ROLE,

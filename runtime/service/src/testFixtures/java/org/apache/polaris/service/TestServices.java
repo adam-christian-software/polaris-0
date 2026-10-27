@@ -98,6 +98,7 @@ import org.apache.polaris.service.catalog.iceberg.CatalogHandlerUtils;
 import org.apache.polaris.service.catalog.iceberg.IcebergCatalogAdapter;
 import org.apache.polaris.service.catalog.iceberg.IcebergCatalogHandler;
 import org.apache.polaris.service.catalog.iceberg.IcebergCatalogHandlerFactory;
+import org.apache.polaris.service.catalog.iceberg.IcebergFunctionConfigEndpoints;
 import org.apache.polaris.service.catalog.iceberg.IcebergRestCatalogEventServiceDelegator;
 import org.apache.polaris.service.catalog.iceberg.IcebergRestConfigEndpoints;
 import org.apache.polaris.service.catalog.iceberg.IcebergRestConfigurationEventServiceDelegator;
@@ -453,6 +454,8 @@ public record TestServices(
                 new IcebergRestConfigEndpoints();
             CatalogConfigEndpointContributor icebergViewEndpoints =
                 new IcebergViewConfigEndpoints();
+            CatalogConfigEndpointContributor icebergFunctionEndpoints =
+                new IcebergFunctionConfigEndpoints();
             CatalogConfigEndpointContributor genericTableEndpoints =
                 new GenericTableConfigEndpoints(realmConfig);
             CatalogConfigEndpointContributor policyEndpoints =
@@ -467,7 +470,9 @@ public record TestServices(
                             endpointContributorHandle(
                                 IcebergRestConfigEndpoints.class, icebergRestEndpoints),
                             endpointContributorHandle(
-                                IcebergViewConfigEndpoints.class, icebergViewEndpoints)));
+                                IcebergViewConfigEndpoints.class, icebergViewEndpoints),
+                            endpointContributorHandle(
+                                IcebergFunctionConfigEndpoints.class, icebergFunctionEndpoints)));
             return new CatalogConfigHandler(
                 new DefaultCatalogPrefixParser(),
                 resolverFactory,

@@ -64,6 +64,7 @@ import org.apache.polaris.service.types.CreatePolicyRequest;
 import org.apache.polaris.service.types.DetachPolicyRequest;
 import org.apache.polaris.service.types.GenericTable;
 import org.apache.polaris.service.types.GetApplicablePoliciesResponse;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.LoadPolicyResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 import org.apache.polaris.service.types.UpdatePolicyRequest;
@@ -141,6 +142,12 @@ public final class EventAttributes {
       new AttributeKey<>("view_metadata_after");
   public static final AttributeKey<LoadViewResponse> LOAD_VIEW_RESPONSE =
       new AttributeKey<>("load_view_response");
+
+  // Function attributes
+  public static final AttributeKey<TableIdentifier> FUNCTION_IDENTIFIER =
+      new AttributeKey<>("function_identifier");
+  public static final AttributeKey<LoadFunctionResponse> LOAD_FUNCTION_RESPONSE =
+      new AttributeKey<>("load_function_response");
 
   // Principal attributes
   public static final AttributeKey<String> PRINCIPAL_NAME = new AttributeKey<>("principal_name");

@@ -87,7 +87,8 @@ public final class PolarisEntityUtils {
           case TABLE_LIKE ->
               switch (entity.getSubType()) {
                 case GENERIC_TABLE -> GenericTableEntity.of(entity);
-                case ICEBERG_TABLE, ICEBERG_VIEW -> IcebergTableLikeEntity.of(entity);
+                case ICEBERG_TABLE, ICEBERG_VIEW, ICEBERG_FUNCTION ->
+                    IcebergTableLikeEntity.of(entity);
                 default -> null;
               };
 

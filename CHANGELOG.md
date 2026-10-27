@@ -101,6 +101,10 @@ request adding CHANGELOG notes for breaking (!) changes and possibly other secti
 
 ### New Features
 
+- Iceberg REST catalogs support listing functions with pagination and loading their portable
+  metadata, including overloaded definitions. Function read access can be granted on catalogs
+  and namespaces with `FUNCTION_LIST` and `FUNCTION_READ_PROPERTIES`.
+
 - Shared CloudEvents 1.0 JSON mapper for Polaris events (`CloudEventsEventJsonMapper` next to
   the events SPI): CE context attributes at the top, Kafka-parity Polaris fields in `data`, and a
   lowercased reverse-DNS `type` (e.g. `org.apache.polaris.after_create_table`). Transport listeners

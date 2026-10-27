@@ -25,6 +25,7 @@ import static org.apache.polaris.service.catalog.common.ExceptionUtils.noSuchNam
 import static org.apache.polaris.service.catalog.common.ExceptionUtils.notFoundExceptionForTableLikeEntity;
 import static org.apache.polaris.service.exception.IcebergExceptionMapper.isStorageProviderRetryableException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -33,6 +34,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -79,12 +81,14 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.exceptions.RuntimeIOException;
 import org.apache.iceberg.exceptions.ServiceFailureException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.io.CloseableGroup;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.io.OutputFile;
+import org.apache.iceberg.util.JsonUtil;
 import org.apache.iceberg.util.LocationUtil;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.Tasks;
@@ -152,6 +156,7 @@ import org.apache.polaris.service.events.PolarisEventType;
 import org.apache.polaris.service.idempotency.EntityIdempotency;
 import org.apache.polaris.service.idempotency.IdempotencyRequestContext;
 import org.apache.polaris.service.task.TaskExecutor;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 import org.apache.polaris.service.types.NotificationType;
 import org.jspecify.annotations.NonNull;
@@ -398,9 +403,10 @@ public class LocalIcebergCatalog extends BaseMetastoreViewCatalog
         resolvedTableLike == null ? null : resolvedTableLike.getRawLeafEntity();
 
     if (existingEntity != null
-        && existingEntity.getSubType() == PolarisEntitySubType.ICEBERG_VIEW) {
+        && (existingEntity.getSubType() == PolarisEntitySubType.ICEBERG_VIEW
+            || existingEntity.getSubType() == PolarisEntitySubType.ICEBERG_FUNCTION)) {
       throw alreadyExistsExceptionWithSameNameForTableLikeEntity(
-          identifier, PolarisEntitySubType.ICEBERG_VIEW);
+          identifier, existingEntity.getSubType());
     }
 
     boolean tableExists =
@@ -1063,6 +1069,42 @@ public class LocalIcebergCatalog extends BaseMetastoreViewCatalog
     }
 
     return listTableLike(PolarisEntitySubType.ICEBERG_VIEW, namespace, pageToken);
+  }
+
+  public Page<TableIdentifier> listFunctions(Namespace namespace, PageToken pageToken) {
+    if (!namespaceExists(namespace)) {
+      throw new NoSuchNamespaceException(
+          "Cannot list functions for namespace. Namespace does not exist: '%s'", namespace);
+    }
+    return listTableLike(PolarisEntitySubType.ICEBERG_FUNCTION, namespace, pageToken);
+  }
+
+  public LoadFunctionResponse loadFunction(TableIdentifier identifier) {
+    PolarisResolvedPathWrapper resolved =
+        resolvedEntityView.getPassthroughResolvedPath(
+            ResolvedPathKey.ofTableLike(identifier), PolarisEntitySubType.ICEBERG_FUNCTION);
+    IcebergTableLikeEntity entity =
+        resolved == null ? null : IcebergTableLikeEntity.of(resolved.getRawLeafEntity());
+    if (entity == null || entity.getMetadataLocation() == null) {
+      throw notFoundExceptionForTableLikeEntity(identifier, PolarisEntitySubType.ICEBERG_FUNCTION);
+    }
+    String metadataLocation = entity.getMetadataLocation();
+    FileIO fileIO =
+        loadFileIOForTableLike(
+            identifier,
+            Set.of(metadataLocation),
+            resolved,
+            new HashMap<>(tableDefaultProperties),
+            Set.of(PolarisStorageActions.READ));
+    try (InputStream input = fileIO.newInputFile(metadataLocation).newStream()) {
+      JsonNode metadata = JsonUtil.mapper().readTree(input);
+      if (metadata == null || !metadata.isObject()) {
+        throw new IllegalStateException("Invalid function metadata: " + metadataLocation);
+      }
+      return new LoadFunctionResponse(metadataLocation, metadata);
+    } catch (IOException e) {
+      throw new RuntimeIOException(e, "Failed to read function metadata: %s", metadataLocation);
+    }
   }
 
   @VisibleForTesting

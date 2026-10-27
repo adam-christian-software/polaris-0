@@ -339,9 +339,9 @@ public abstract class CatalogHandler {
     // "View with same name already exists"
     PolarisEntitySubType leafSubType =
         resolutionManifest.getLeafSubType(ResolvedPathKey.ofTableLike(identifier));
-    if (leafSubType == PolarisEntitySubType.ICEBERG_VIEW) {
-      throw alreadyExistsExceptionWithSameNameForTableLikeEntity(
-          identifier, PolarisEntitySubType.ICEBERG_VIEW);
+    if (leafSubType == PolarisEntitySubType.ICEBERG_VIEW
+        || leafSubType == PolarisEntitySubType.ICEBERG_FUNCTION) {
+      throw alreadyExistsExceptionWithSameNameForTableLikeEntity(identifier, leafSubType);
     }
 
     PolarisResolvedPathWrapper tableTarget =
@@ -548,6 +548,7 @@ public abstract class CatalogHandler {
       case ICEBERG_TABLE:
       case PolarisEntitySubType.ICEBERG_VIEW:
       case PolarisEntitySubType.GENERIC_TABLE:
+      case PolarisEntitySubType.ICEBERG_FUNCTION:
         throw new AlreadyExistsException(
             "Cannot rename %s to %s. %s already exists",
             src, dst, entityNameForSubType(dstLeafSubType));

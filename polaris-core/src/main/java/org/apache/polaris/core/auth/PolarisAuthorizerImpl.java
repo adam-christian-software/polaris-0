@@ -42,6 +42,8 @@ import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_READ_
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_USAGE;
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_WRITE_PROPERTIES;
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_WRITE_PROPERTIES;
+import static org.apache.polaris.core.entity.PolarisPrivilege.FUNCTION_LIST;
+import static org.apache.polaris.core.entity.PolarisPrivilege.FUNCTION_READ_PROPERTIES;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_ATTACH_POLICY;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_CREATE;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_DETACH_POLICY;
@@ -237,6 +239,16 @@ public class PolarisAuthorizerImpl implements PolarisAuthorizer {
             VIEW_LIST,
             VIEW_READ_PROPERTIES,
             VIEW_WRITE_PROPERTIES));
+    SUPER_PRIVILEGES.putAll(
+        FUNCTION_LIST,
+        List.of(
+            CATALOG_MANAGE_CONTENT,
+            CATALOG_MANAGE_METADATA,
+            FUNCTION_LIST,
+            FUNCTION_READ_PROPERTIES));
+    SUPER_PRIVILEGES.putAll(
+        FUNCTION_READ_PROPERTIES,
+        List.of(CATALOG_MANAGE_CONTENT, CATALOG_MANAGE_METADATA, FUNCTION_READ_PROPERTIES));
     SUPER_PRIVILEGES.putAll(
         NAMESPACE_READ_PROPERTIES,
         List.of(

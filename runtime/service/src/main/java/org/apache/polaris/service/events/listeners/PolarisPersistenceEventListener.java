@@ -82,6 +82,7 @@ public abstract class PolarisPersistenceEventListener implements PolarisEventLis
     return switch (eventType.category()) {
       case TABLE, GENERIC_TABLE -> ResourceType.TABLE;
       case VIEW -> ResourceType.VIEW;
+      case FUNCTION -> ResourceType.FUNCTION;
       case NAMESPACE -> ResourceType.NAMESPACE;
       case CATALOG -> ResourceType.CATALOG;
       case POLICY,
@@ -103,6 +104,18 @@ public abstract class PolarisPersistenceEventListener implements PolarisEventLis
     return switch (resourceType) {
       case TABLE -> resolveTableResourceIdentifier(event, catalogName);
       case VIEW -> resolveViewResourceIdentifier(event, catalogName);
+      case FUNCTION ->
+          event
+              .attributes()
+              .getOptional(EventAttributes.FUNCTION_IDENTIFIER)
+              .map(TableIdentifier::toString)
+              .or(
+                  () ->
+                      event
+                          .attributes()
+                          .getOptional(EventAttributes.NAMESPACE)
+                          .map(Namespace::toString))
+              .orElseGet(() -> fallbackResourceIdentifier(event, catalogName));
       case NAMESPACE -> resolveNamespaceResourceIdentifier(event, catalogName);
       case CATALOG -> resolveCatalogResourceIdentifier(event, catalogName);
       case REALM -> resolveRealmResourceIdentifier(event);

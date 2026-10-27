@@ -1598,6 +1598,8 @@ components:
     NamespacePrivilege:
       type: string
       enum:
+        - FUNCTION_LIST
+        - FUNCTION_READ_PROPERTIES
         - SEMANTIC_MODEL_LIST
         - SEMANTIC_MODEL_CREATE
         - SEMANTIC_MODEL_READ
@@ -1659,6 +1661,8 @@ components:
     CatalogPrivilege:
       type: string
       enum:
+        - FUNCTION_LIST
+        - FUNCTION_READ_PROPERTIES
         - SEMANTIC_MODEL_LIST
         - SEMANTIC_MODEL_CREATE
         - SEMANTIC_MODEL_READ

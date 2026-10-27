@@ -27,6 +27,7 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
+import org.apache.polaris.core.exceptions.NoSuchFunctionException;
 
 public class ExceptionUtils {
   private ExceptionUtils() {}
@@ -55,6 +56,9 @@ public class ExceptionUtils {
 
   public static RuntimeException notFoundExceptionForTableLikeEntity(
       String identifier, PolarisEntitySubType subType) {
+    if (subType == PolarisEntitySubType.ICEBERG_FUNCTION) {
+      return new NoSuchFunctionException("Function does not exist: %s", identifier);
+    }
     return subType == PolarisEntitySubType.ICEBERG_VIEW
         ? new NoSuchViewException(
             "%s does not exist: %s", entityNameForSubType(subType), identifier)
@@ -85,6 +89,7 @@ public class ExceptionUtils {
     }
     return switch (subType) {
       case ICEBERG_VIEW -> "View";
+      case ICEBERG_FUNCTION -> "Function";
       case GENERIC_TABLE -> "Generic table";
       default -> "Table";
     };

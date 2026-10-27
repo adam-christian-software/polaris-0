@@ -138,6 +138,7 @@ import org.apache.polaris.service.idempotency.IdempotencyRequestContext;
 import org.apache.polaris.service.metrics.IcebergMetricsReporter;
 import org.apache.polaris.service.metrics.MetricType;
 import org.apache.polaris.service.metrics.MetricsReportEnvelope;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -1662,6 +1663,32 @@ public abstract class IcebergCatalogHandler extends CatalogHandler implements Au
           .nextPageToken(results.encodedResponseToken())
           .build();
     }
+  }
+
+  public ListTablesResponse listFunctions(Namespace namespace, String pageToken, Integer pageSize) {
+    authorizeBasicNamespaceOperationOrThrow(PolarisAuthorizableOperation.LIST_FUNCTIONS, namespace);
+    if (!(baseCatalog instanceof LocalIcebergCatalog localCatalog)) {
+      throw new BadRequestException("Function APIs are not supported for federated catalogs");
+    }
+    PageToken pageRequest =
+        PageToken.build(pageToken, pageSize, maxPageSize(), this::shouldDecodeToken);
+    var results = localCatalog.listFunctions(namespace, pageRequest);
+    rejectIncompleteListing(pageToken, pageSize, results.encodedResponseToken());
+    return ListTablesResponse.builder()
+        .addAll(results.items())
+        .nextPageToken(results.encodedResponseToken())
+        .build();
+  }
+
+  public LoadFunctionResponse loadFunction(TableIdentifier identifier) {
+    resolveAndAuthorizeBasicTableLikeOperationOrThrow(
+        PolarisAuthorizableOperation.LOAD_FUNCTION,
+        PolarisEntitySubType.ICEBERG_FUNCTION,
+        identifier);
+    if (!(baseCatalog instanceof LocalIcebergCatalog localCatalog)) {
+      throw new BadRequestException("Function APIs are not supported for federated catalogs");
+    }
+    return localCatalog.loadFunction(identifier);
   }
 
   public LoadViewResponse createView(Namespace namespace, CreateViewRequest request) {

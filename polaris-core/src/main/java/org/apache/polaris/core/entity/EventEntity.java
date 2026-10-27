@@ -151,6 +151,7 @@ public class EventEntity {
     NAMESPACE,
     TABLE,
     VIEW,
+    FUNCTION,
     REALM
   }
 }

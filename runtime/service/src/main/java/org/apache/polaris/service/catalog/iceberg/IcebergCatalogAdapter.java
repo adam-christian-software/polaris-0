@@ -565,6 +565,36 @@ public class IcebergCatalogAdapter
   }
 
   @Override
+  public Response listFunctions(
+      String prefix,
+      String namespace,
+      String pageToken,
+      Integer pageSize,
+      RealmContext realmContext,
+      SecurityContext securityContext) {
+    Namespace ns =
+        NamespaceUtils.splitNamespace(namespace, NamespaceUtils.DEFAULT_NAMESPACE_SEPARATOR);
+    return withCatalog(
+        securityContext,
+        prefix,
+        catalog -> Response.ok(catalog.listFunctions(ns, pageToken, pageSize)).build());
+  }
+
+  @Override
+  public Response loadFunction(
+      String prefix,
+      String namespace,
+      String function,
+      RealmContext realmContext,
+      SecurityContext securityContext) {
+    Namespace ns =
+        NamespaceUtils.splitNamespace(namespace, NamespaceUtils.DEFAULT_NAMESPACE_SEPARATOR);
+    TableIdentifier identifier = TableIdentifier.of(ns, function);
+    return withCatalog(
+        securityContext, prefix, catalog -> Response.ok(catalog.loadFunction(identifier)).build());
+  }
+
+  @Override
   public Response loadCredentials(
       String prefix,
       String namespace,

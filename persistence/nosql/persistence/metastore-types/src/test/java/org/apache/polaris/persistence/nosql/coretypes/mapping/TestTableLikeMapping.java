@@ -35,6 +35,7 @@ import org.apache.polaris.persistence.nosql.api.obj.ObjType;
 import org.apache.polaris.persistence.nosql.coretypes.ObjBase;
 import org.apache.polaris.persistence.nosql.coretypes.catalog.CatalogStateObj;
 import org.apache.polaris.persistence.nosql.coretypes.content.GenericTableObj;
+import org.apache.polaris.persistence.nosql.coretypes.content.IcebergFunctionObj;
 import org.apache.polaris.persistence.nosql.coretypes.content.IcebergTableObj;
 import org.apache.polaris.persistence.nosql.coretypes.content.IcebergViewObj;
 import org.apache.polaris.persistence.nosql.coretypes.content.TableLikeObj;
@@ -92,6 +93,17 @@ public class TestTableLikeMapping extends BaseTestMapping {
           @Override
           public IcebergTableObj.Builder objBuilder() {
             return IcebergTableObj.builder();
+          }
+
+          @Override
+          public Stream<MappingSample> typeVariations(MappingSample base) {
+            return storageVariations(this::objBuilder, base);
+          }
+        },
+        new TableLikeParameter(PolarisEntitySubType.ICEBERG_FUNCTION, IcebergFunctionObj.TYPE) {
+          @Override
+          public IcebergFunctionObj.Builder objBuilder() {
+            return IcebergFunctionObj.builder();
           }
 
           @Override

@@ -73,6 +73,7 @@ import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_ASS
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_CATALOGS;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_CATALOG_ROLES;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_CATALOG_ROLES_FOR_PRINCIPAL_ROLE;
+import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_FUNCTIONS;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_GRANTS_FOR_CATALOG_ROLE;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_NAMESPACES;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_POLICY;
@@ -82,6 +83,7 @@ import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_PRI
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_SEMANTIC_MODEL;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_TABLES;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LIST_VIEWS;
+import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LOAD_FUNCTION;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LOAD_NAMESPACE_METADATA;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LOAD_POLICY;
 import static org.apache.polaris.core.auth.PolarisAuthorizableOperation.LOAD_SEMANTIC_MODEL;
@@ -153,6 +155,8 @@ import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_MANAG
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_READ_PROPERTIES;
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_ROLE_WRITE_PROPERTIES;
 import static org.apache.polaris.core.entity.PolarisPrivilege.CATALOG_WRITE_PROPERTIES;
+import static org.apache.polaris.core.entity.PolarisPrivilege.FUNCTION_LIST;
+import static org.apache.polaris.core.entity.PolarisPrivilege.FUNCTION_READ_PROPERTIES;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_ATTACH_POLICY;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_CREATE;
 import static org.apache.polaris.core.entity.PolarisPrivilege.NAMESPACE_DETACH_POLICY;
@@ -335,6 +339,9 @@ record RbacOperationSemantics(
     register(DROP_VIEW, VIEW_DROP);
     register(VIEW_EXISTS, VIEW_LIST);
     register(RENAME_VIEW, EnumSet.of(VIEW_DROP), EnumSet.of(VIEW_LIST, VIEW_CREATE));
+
+    register(LIST_FUNCTIONS, FUNCTION_LIST);
+    register(LOAD_FUNCTION, FUNCTION_READ_PROPERTIES);
 
     // Metrics and notifications
     register(REPORT_READ_METRICS, TABLE_READ_DATA);

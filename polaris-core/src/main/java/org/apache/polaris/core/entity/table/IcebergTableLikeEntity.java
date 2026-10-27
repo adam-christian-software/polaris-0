@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * An entity type for {@link TableLikeEntity} instances that conform to iceberg semantics around
- * locations. This includes both Iceberg tables and Iceberg views.
+ * locations. This includes Iceberg tables, views, and functions.
  */
 public class IcebergTableLikeEntity extends TableLikeEntity {
   // For applicable types, this key on the "internalProperties" map will return the location
@@ -89,7 +89,8 @@ public class IcebergTableLikeEntity extends TableLikeEntity {
     PolarisEntitySubType subType = getSubType();
     Preconditions.checkState(
         subType == PolarisEntitySubType.ICEBERG_TABLE
-            || subType == PolarisEntitySubType.ICEBERG_VIEW,
+            || subType == PolarisEntitySubType.ICEBERG_VIEW
+            || subType == PolarisEntitySubType.ICEBERG_FUNCTION,
         "Invalid entity sub type: %s",
         subType);
   }

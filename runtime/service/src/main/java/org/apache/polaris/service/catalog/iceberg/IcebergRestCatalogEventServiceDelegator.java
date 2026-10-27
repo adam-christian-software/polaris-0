@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
@@ -60,6 +61,7 @@ import org.apache.polaris.service.events.PolarisEventMetadataFactory;
 import org.apache.polaris.service.events.PolarisEventType;
 import org.apache.polaris.service.types.CommitTableRequest;
 import org.apache.polaris.service.types.CommitViewRequest;
+import org.apache.polaris.service.types.LoadFunctionResponse;
 import org.apache.polaris.service.types.NotificationRequest;
 
 @Decorator
@@ -752,6 +754,43 @@ public class IcebergRestCatalogEventServiceDelegator
   }
 
   @Override
+  public Response listFunctions(
+      String prefix,
+      String namespace,
+      String pageToken,
+      Integer pageSize,
+      RealmContext realmContext,
+      SecurityContext securityContext) {
+    String catalogName = prefixParser.prefixToCatalogName(prefix);
+    Namespace namespaceObj =
+        NamespaceUtils.splitNamespace(namespace, NamespaceUtils.DEFAULT_NAMESPACE_SEPARATOR);
+    if (polarisEventDispatcher.hasListeners(PolarisEventType.BEFORE_LIST_FUNCTIONS)) {
+      polarisEventDispatcher.dispatch(
+          new PolarisEvent(
+              PolarisEventType.BEFORE_LIST_FUNCTIONS,
+              eventMetadataFactory.create(),
+              ImmutableAttributeMap.builder()
+                  .put(EventAttributes.CATALOG_NAME, catalogName)
+                  .put(EventAttributes.NAMESPACE, namespaceObj)
+                  .build()));
+    }
+    Response resp =
+        delegate.listFunctions(
+            prefix, namespace, pageToken, pageSize, realmContext, securityContext);
+    if (polarisEventDispatcher.hasListeners(PolarisEventType.AFTER_LIST_FUNCTIONS)) {
+      polarisEventDispatcher.dispatch(
+          new PolarisEvent(
+              PolarisEventType.AFTER_LIST_FUNCTIONS,
+              eventMetadataFactory.create(),
+              ImmutableAttributeMap.builder()
+                  .put(EventAttributes.CATALOG_NAME, catalogName)
+                  .put(EventAttributes.NAMESPACE, namespaceObj)
+                  .build()));
+    }
+    return resp;
+  }
+
+  @Override
   public Response listViews(
       String prefix,
       String namespace,
@@ -822,6 +861,50 @@ public class IcebergRestCatalogEventServiceDelegator
                   .put(EventAttributes.CATALOG_NAME, catalogName)
                   .put(EventAttributes.NAMESPACE, namespaceObj)
                   .put(EventAttributes.TABLE_NAME, table)
+                  .build()));
+    }
+    return resp;
+  }
+
+  @Override
+  public Response loadFunction(
+      String prefix,
+      String namespace,
+      String function,
+      RealmContext realmContext,
+      SecurityContext securityContext) {
+    String catalogName = prefixParser.prefixToCatalogName(prefix);
+    Namespace namespaceObj =
+        NamespaceUtils.splitNamespace(namespace, NamespaceUtils.DEFAULT_NAMESPACE_SEPARATOR);
+    if (polarisEventDispatcher.hasListeners(PolarisEventType.BEFORE_LOAD_FUNCTION)) {
+      polarisEventDispatcher.dispatch(
+          new PolarisEvent(
+              PolarisEventType.BEFORE_LOAD_FUNCTION,
+              eventMetadataFactory.create(),
+              ImmutableAttributeMap.builder()
+                  .put(EventAttributes.CATALOG_NAME, catalogName)
+                  .put(EventAttributes.NAMESPACE, namespaceObj)
+                  .put(
+                      EventAttributes.FUNCTION_IDENTIFIER,
+                      TableIdentifier.of(namespaceObj, function))
+                  .build()));
+    }
+    Response resp =
+        delegate.loadFunction(prefix, namespace, function, realmContext, securityContext);
+    if (polarisEventDispatcher.hasListeners(PolarisEventType.AFTER_LOAD_FUNCTION)) {
+      polarisEventDispatcher.dispatch(
+          new PolarisEvent(
+              PolarisEventType.AFTER_LOAD_FUNCTION,
+              eventMetadataFactory.create(),
+              ImmutableAttributeMap.builder()
+                  .put(EventAttributes.CATALOG_NAME, catalogName)
+                  .put(EventAttributes.NAMESPACE, namespaceObj)
+                  .put(
+                      EventAttributes.FUNCTION_IDENTIFIER,
+                      TableIdentifier.of(namespaceObj, function))
+                  .put(
+                      EventAttributes.LOAD_FUNCTION_RESPONSE,
+                      (LoadFunctionResponse) resp.getEntity())
                   .build()));
     }
     return resp;
